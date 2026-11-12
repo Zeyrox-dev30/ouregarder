@@ -240,16 +240,17 @@ async function ouvrirDetails(id, type) {
     ]);
 
     if (!details) return;
-        document.title = `Où regarder ${titre} en streaming VF — OùRegarder`;
-    window.history.replaceState({}, "", `?type=${type}&id=${id}`);
-    enregistrerLog("Consultation fiche", `${titre} (${type})`);
+      
 
 
     const titre = details.title || details.name;
+      document.title = `Où regarder ${titre} en streaming VF — OùRegarder`;
+    window.history.replaceState({}, "", `?type=${type}&id=${id}`);
+    enregistrerLog("Consultation fiche", `${titre} (${type})`);
     const date = (details.release_date || details.first_air_date || "").substring(0, 4);
     const note = details.vote_average ? details.vote_average.toFixed(1) : "N/A";
     const genres = (details.genres || []).map(g => g.name).join(" • ");
-    const placeholderSansAffiche = "https://" + "://placeholder.com";
+    const placeholderSansAffiche = "https://" + "via.placeholder.com";
     const poster = details.poster_path ? IMG_POSTER + details.poster_path : placeholderSansAffiche;
 
     const listeFr = videosFr && videosFr.results ? videosFr.results : [];
@@ -257,15 +258,19 @@ async function ouvrirDetails(id, type) {
     const toutesVideos = [...listeFr, ...listeEn];
     const trailer = toutesVideos.find(v => v.site === "YouTube" && v.type === "Trailer") 
                  || toutesVideos.find(v => v.site === "YouTube");
+    const ytHost = "www.youtube.com";
+    const baseEmbed = "https://" + ytHost + "/embed/";
+    const ytSearch = "https://" + ytHost + "/results?search_query=" + encodeURIComponent(titre + " bande annonce vf");
 
-        const dossierEmbed = "embed";
-    const baseEmbed = "https://youtube.com" + "/" + dossierEmbed + "/";
-
+  
     const htmlVideo = trailer 
         ? `<div class="trailer-container">
-               <iframe src="${baseEmbed}${trailer.key}" title="Bande-annonce ${titre}" allowfullscreen></iframe>
+               <iframe src="${baseEmbed}${trailer.key}" title="Bande-annonce ${titre}" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+           </div>
+           <div style="text-align:right; margin-top:6px;">
+               <a href="${ytSearch}" target="_blank" style="font-size:0.8rem; color:#94a3b8; text-decoration:underline;">Problème de lecture ? Ouvrir sur YouTube ↗</a>
            </div>`
-        : `<p style="font-size:0.85rem; color:#94a3b8; margin-top:14px;">🎞️ Aucune bande-annonce vidéo disponible.</p>`;
+        : `<p style="font-size:0.85rem; color:#94a3b8; margin-top:14px;">🎞️ Aucune bande-annonce intégrée. <a href="${ytSearch}" target="_blank" style="color:#38bdf8;">Chercher sur YouTube ↗</a></p>`;
 
     const frProviders = providersData && providersData.results ? providersData.results.FR : null;
     const abonnement = frProviders && frProviders.flatrate ? frProviders.flatrate : [];
