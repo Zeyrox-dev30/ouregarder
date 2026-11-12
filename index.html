@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OùRegarder — Trouve où streamer tes films et séries</title>
+        <meta name="description" content="Trouve instantanément sur quelle plateforme de streaming (Netflix, Prime Video, Disney+, Canal+, Arte, France.tv) regarder n'importe quel film ou série en France.">
+    <meta name="keywords" content="ou regarder, streaming france, netflix, prime video, disney plus, arte replay, film streaming">
+    <meta property="og:title" content="OùRegarder — Le guide universel du streaming en France">
+    <meta property="og:description" content="Cherche un film ou une série, regarde sa bande-annonce et découvre sur quelle plateforme le streamer légalement.">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Barre de navigation façon plateforme VOD -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <div class="logo" onclick="chargerTendances()">🎬 OÙ<span>REGARDER</span></div>
+            <div class="nav-links">
+                <button class="nav-tab active" onclick="changerOnglet('tendance', this)">🔥 Tendances</button>
+                <button class="nav-tab" onclick="changerOnglet('films', this)">🎥 Films</button>
+                <button class="nav-tab" onclick="changerOnglet('series', this)">📺 Séries</button>
+                <button class="nav-tab" onclick="changerOnglet('watchlist', this)">🔖 Ma Liste (<span id="count-watchlist">0</span>)</button>
+            </div>
+        </div>
+
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="Rechercher un film, une série..." onkeyup="gererRecherche(event)">
+            <button onclick="lancerRecherche()">🔍</button>
+        </div>
+                <div id="auth-zone">
+            <button class="btn-auth" onclick="ouvrirModaleAuth()">👤 Connexion / Inscription</button>
+        </div>
+
+    </nav>
+
+    <!-- Bannière Hero dynamique (Film à la une) -->
+    <header id="hero-banner" class="hero">
+        <div class="hero-overlay">
+            <div class="hero-content">
+                <span class="hero-badge">⭐ TENDANCE N°1 EN FRANCE</span>
+                <h1 id="hero-title">Chargement du catalogue...</h1>
+                <p id="hero-desc">Connexion à la base de données cinéma en cours...</p>
+                <div class="hero-actions">
+                    <button id="hero-btn-details" class="btn-primary">▶️ Voir où regarder</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenu principal : Grille de films & séries -->
+       <!-- Contenu principal : Filtres + Grille -->
+    <main class="main-content">
+        <!-- Barre de filtres par Plateforme (IDs officiels TMDB France) -->
+        <div class="filters-bar">
+            <div class="platform-pills">
+                <button class="plat-pill active" onclick="filtrerParPlateforme('', this)">🌐 Toutes</button>
+                <button class="plat-pill" onclick="filtrerParPlateforme('8', this)">🔴 Netflix</button>
+                <button class="plat-pill" onclick="filtrerParPlateforme('119', this)">🔵 Prime Video</button>
+                <button class="plat-pill" onclick="filtrerParPlateforme('337', this)">✨ Disney+</button>
+                <button class="plat-pill" onclick="filtrerParPlateforme('381', this)">⚫ Canal+</button>
+                <button class="plat-pill" onclick="filtrerParPlateforme('350', this)">🍎 Apple TV+</button>
+                <button class="plat-pill" onclick="filtrerParPlateforme('234', this)">🟠 Arte (Gratuit)</button>
+                <button class="plat-pill" onclick="filtrerParPlateforme('236', this)">🇫🇷 France.tv (Gratuit)</button>
+            </div>
+
+            <div class="secondary-filters">
+                <select id="genre-select" class="cyber-select" onchange="appliquerFiltres()">
+                    <option value="">🎭 Tous les genres</option>
+                    <option value="28">💥 Action</option>
+                    <option value="35">😂 Comédie</option>
+                    <option value="18">🎭 Drame</option>
+                    <option value="27">👻 Horreur</option>
+                    <option value="878">🚀 Science-Fiction</option>
+                    <option value="16">🎨 Animation</option>
+                    <option value="53">🔪 Thriller</option>
+                </select>
+
+                <button class="btn-random" onclick="choisirAuHasard()">🎲 Ce soir je regarde quoi ?</button>
+            </div>
+        </div>
+
+        <div class="section-header">
+            <h2 id="section-title">🔥 Tendances de la semaine</h2>
+            <span id="results-count" class="results-badge"></span>
+        </div>
+
+        <div id="movies-grid" class="movies-grid"></div>
+                <div id="movies-grid" class="movies-grid"></div>
+
+        <!-- Bouton Charger Plus (Pagination) -->
+        <div id="load-more-wrap" class="load-more-container hidden">
+            <button class="btn-load-more" onclick="chargerPageSuivante()">➕ Charger plus de titres</button>
+        </div>
+    </main>
+
+    </main>
+
+
+    <!-- Modale Fiche Détaillée + Plateformes de Streaming -->
+    <div id="movie-modal" class="modal hidden" onclick="fermerModale(event)">
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="fermerModale()">✕</button>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+        <!-- Modale Profil Cinéphile & Statistiques -->
+    <div id="profil-modal" class="modal hidden" onclick="fermerModaleProfil(event)">
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="fermerModaleProfil()">✕</button>
+            <div id="profil-body"></div>
+        </div>
+    </div>
+
+         <!-- Modale Connexion / Inscription -->
+    <div id="auth-modal" class="modal hidden" onclick="fermerModaleAuth(event)">
+        <div class="modal-card auth-card" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="fermerModaleAuth()">✕</button>
+            <h2 id="auth-title" style="margin-bottom: 8px;">🔐 Rejoins OùRegarder</h2>
+            <p style="color:#94a3b8; font-size:0.9rem; margin-bottom:18px;">Sauvegarde ta Watchlist dans le cloud et publie tes avis sur les films.</p>
+
+            <input type="text" id="auth-pseudo" class="auth-input hidden" placeholder="Ton pseudo (ex: Zeyrox)">
+            <input type="email" id="auth-email" class="auth-input" placeholder="Ton adresse e-mail">
+            <input type="password" id="auth-password" class="auth-input" placeholder="Mot de passe (6 caractères min.)">
+
+            <p id="auth-error" style="color:#f87171; font-size:0.85rem; margin-bottom:12px;"></p>
+
+            <button id="auth-submit-btn" class="btn-primary" style="width:100%;" onclick="validerAuth()">Se connecter</button>
+            
+            <p style="text-align:center; margin-top:14px; font-size:0.88rem; color:#94a3b8;">
+                <span id="auth-switch-text">Pas encore de compte ?</span>
+                <button type="button" id="auth-switch-btn" onclick="basculerModeAuth()" style="background:none; border:none; color:#38bdf8; font-weight:700; cursor:pointer; text-decoration:underline;">Créer un compte</button>
+            </p>
+        </div>
+    </div>
+
+    <!-- SDK Officiel Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script src="app.js"></script>
+</body>
+</html>
